@@ -13,6 +13,7 @@ import (
 
 	authHandler "jellyfin-hls-server/internal/api/auth"
 	contentHandler "jellyfin-hls-server/internal/api/content"
+	systemhandler "jellyfin-hls-server/internal/api/system"
 	"jellyfin-hls-server/internal/config"
 	"jellyfin-hls-server/internal/db"
 	repoContent "jellyfin-hls-server/internal/repo/content"
@@ -38,7 +39,7 @@ func main() {
 	userRepoInstance := repoUsers.NewUserRepo(dbConn.Db.DB)
 
 	// Setup router and routes
-	router := initRouter(userRepoInstance, contentRepoInstance)
+	router := initRouter(userRepoInstance, contentRepoInstance, cfg)
 
 	// Start the server with graceful shutdown
 	port := cfg.ServerPort
@@ -75,16 +76,34 @@ func main() {
 	log.Println("Server exiting")
 }
 
-func initRouter(userRepoInstance *repoUsers.UserRepo, contentRepoInstance *repoContent.ContentRepo) *gin.Engine {
-	router := gin.New()
+func initRouter(userRepoInstance *repoUsers.UserRepo, contentRepoInstance *repoContent.ContentRepo, cfg *config.Config) *gin.Engine {
+	var router *gin.Engine
+	if cfg.Debug {
+		router = gin.Default() // includes logger and recovery middleware
+	} else {
+		router = gin.New() // no logger by default
+	}
+
+	// System Info
+	system := systemhandler.NewSystemHandler()
+	systemGroup := router.Group("/system")
+	{
+		systemGroup.GET("/info/public", system.GetSystemInfoHandler)
+	}
 
 	// Authentication
 	authGroup := router.Group("/users")
-	auth := authHandler.NewAuthHandler(userRepoInstance)
+	authGroupUpper := router.Group("/Users") // Uppercase group for compatibility
+	auth := authHandler.NewAuthHandler(userRepoInstance, cfg)
 	{
 		// Pass userRepo to auth handlers
-		authGroup.POST("/authenticate", auth.AuthenticateUser)
+		authGroup.GET("/public", auth.UserPublicHandler)
+		authGroup.POST("/authenticatebyname", auth.AuthenticateUser)
 		authGroup.GET("/me", auth.GetCurrentUser)
+
+		authGroupUpper.GET("/public", auth.UserPublicHandler)
+		authGroupUpper.POST("/authenticatebyname", auth.AuthenticateUser)
+		authGroupUpper.GET("/me", auth.GetCurrentUser)
 	}
 
 	content := contentHandler.NewContentHandler(contentRepoInstance)

@@ -28,10 +28,3 @@ The application uses a `.env` file to manage configuration settings.  The follow
 2.  **Configuration**: Create a `.env` file in the project root and set the required environment variables.
 3.  **Database Migrations**: Run the database migrations located in the `migrations/` directory to set up the database schema.
 4.  **Run the Application**: Execute the `main.go` file to start the application.
-
-## Next steps
-
-* Explore the [Firebase Studio documentation](/docs/studio).
-* [Get started with Firebase Studio](https://studio.firebase.google.com/).
-
-Send feedback

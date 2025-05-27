@@ -10,6 +10,9 @@ import (
 type Config struct {
 	DatabaseURL string `mapstructure:"DATABASE_URL"`
 	ServerPort  string `mapstructure:"SERVER_PORT"`
+	Debug       bool   `mapstructure:"DEBUG"`
+	JwtSecret   string `mapstructure:"JWT_SECRET"`
+	ServerId    string `mapstructure:"SERVER_ID"` // Unique identifier for the server
 	// Add other configuration fields here
 }
 
@@ -22,6 +25,7 @@ func LoadConfig() (*Config, error) {
 
 	// Default values (optional)
 	viper.SetDefault("SERVER_PORT", "8080")
+	viper.SetDefault("DEBUG", false)
 
 	viper.AutomaticEnv() // Read from environment variables
 

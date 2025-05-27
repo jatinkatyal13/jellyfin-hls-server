@@ -33,13 +33,16 @@ build/run: build ## build and run the binary using env vars from builder/local_e
 ######################### DEVELOPMENT #########################
 DOCKER_IMAGE_NAME=jellyfin-hls-server
 DOCKER_FILE_PATH=Dockerfile
-DOCKER_COMPOSE_FILE_PATH=docker-compose.yml
+DOCKER_COMPOSE_FILE_PATH=dev/docker-compose.yaml
 
 ## Development
-dev: ## start the development environment
+dev/start: ## start the development environment
 	@make start section="DEV"
 	@docker compose -f $(DOCKER_COMPOSE_FILE_PATH) up --build
 	@make stop section="DEV"
+
+dev/ps: ## list the containers in the development environment
+	@docker compose -f $(DOCKER_COMPOSE_FILE_PATH) ps
 
 dev/stop: ## stop the development environment
 	@make start section="DEV STOP"
